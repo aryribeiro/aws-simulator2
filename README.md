@@ -52,8 +52,8 @@ Este simulador foi originalmente desenvolvido para a certificação AWS Solution
 
 1. **Clone o repositório:**
 ```bash
-git clone https://github.com/seu-usuario/aws-ccp-simulator.git
-cd aws-ccp-simulator
+git clone https://github.com/aryribeiro/aws-simulator2.git
+cd aws-simulator2
 ```
 
 2. **Instale as dependências:**
