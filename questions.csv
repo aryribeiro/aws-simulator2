@@ -1,0 +1,4 @@
+question,options,answer,multiple
+O que é o Amazon S3?,"['Armazenamento de objetos', 'Banco de dados relacional', 'Serviço de computação']",['Armazenamento de objetos'],False
+Quais serviços são gerenciados?,"['EC2', 'ECS', 'RDS', 'IAM', 'Lambda']","['RDS', 'IAM', 'Lambda']",True
+Tudo bem com você?,"['Sim', 'Não', 'Talvez']",['Sim'],False
