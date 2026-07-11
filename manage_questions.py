@@ -1,5 +1,9 @@
 import streamlit as st
 import pandas as pd
+import json
+from pathlib import Path
+
+CSV_PATH = Path(__file__).parent / "questions.csv"
 
 st.set_page_config(page_title="Gerenciar Perguntas AWS", layout="wide")
 
@@ -17,13 +21,13 @@ st.markdown("""
 # Função para carregar o CSV
 def load_csv():
     try:
-        return pd.read_csv("questions.csv")
+        return pd.read_csv(CSV_PATH, encoding="utf-8")
     except FileNotFoundError:
         return pd.DataFrame(columns=["question", "options", "answer", "multiple"])
 
 # Função para salvar no CSV
 def save_csv(df):
-    df.to_csv("questions.csv", index=False)
+    df.to_csv(CSV_PATH, index=False, encoding="utf-8")
 
 # Título
 st.title("Gerenciar Perguntas do Simulado AWS")
@@ -48,22 +52,32 @@ with st.form(key="add_question_form"):
             # Processa opções e respostas
             opts_list = [opt.strip() for opt in options.split("\n") if opt.strip()]
             ans_list = [ans.strip() for ans in answer.split("\n") if ans.strip()]
-            if not all(ans in opts_list for ans in ans_list):
+            df = load_csv()
+            if len(opts_list) != len(set(opts_list)):
+                st.error("As opções não podem conter itens repetidos.")
+            elif len(ans_list) != len(set(ans_list)):
+                st.error("As respostas corretas não podem conter itens repetidos.")
+            elif not all(ans in opts_list for ans in ans_list):
                 st.error("Todas as respostas corretas devem estar nas opções fornecidas.")
+            elif multiple and len(ans_list) < 2:
+                st.error("Múltiplas respostas marcado, mas apenas uma resposta correta foi fornecida.")
+            elif not multiple and len(ans_list) > 1:
+                st.error("Mais de uma resposta correta exige marcar 'Permite múltiplas respostas?'. "
+                         "Sem isso, a pergunta seria impossível de acertar no simulado.")
+            elif question.strip() in df["question"].values:
+                st.error("Esta pergunta já existe no banco.")
             else:
-                # Carrega o CSV atual
-                df = load_csv()
-                # Adiciona a nova pergunta
+                # Adiciona a nova pergunta (listas gravadas como JSON, seguro para apóstrofos)
                 new_row = {
-                    "question": question,
-                    "options": str(opts_list),
-                    "answer": str(ans_list),
+                    "question": question.strip(),
+                    "options": json.dumps(opts_list, ensure_ascii=False),
+                    "answer": json.dumps(ans_list, ensure_ascii=False),
                     "multiple": multiple
                 }
                 df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
                 save_csv(df)
                 st.success("Pergunta adicionada com sucesso!")
-                st.rerun()  # Atualizado de experimental_rerun para rerun
+                st.rerun()
 
 # --- Visualizar e remover perguntas ---
 st.header("Perguntas Existentes")
